@@ -1,13 +1,17 @@
 import cv2
 import numpy as np
 
+HSV_LOWER = [40, 0, 80]
+HSV_UPPER = [180, 150, 225]
+
 def get_data_point():
     # Get image from camera
     cam = cv2.VideoCapture(0)
     ret, frame = cam.read()
 
     # Process image
-    image = process_image(frame)
+    image = process_image_Mask(frame)
+    image = draw_lines(image)
 
     # Get steering angle and speed
     angle = 0
@@ -21,13 +25,15 @@ def get_data_point():
 
 
 # Implementierts de methode
-#TODO: Purify Lines
 #TODO: compress image
-def process_image(image):
+
+def crop_image(image):
     h, w, c = image.shape
-
     crop_img = image[int((h/3)*2):h, 0:w]
+    return crop_img
 
+def process_image_Canny(image):
+    crop_img = crop_image(image)
     gray_img = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
 
     kernel_size = 5
@@ -51,21 +57,33 @@ def process_image(image):
 
     for line in lines:
         for x1,y1,x2,y2 in line:
-            cv2.line(line_image,(x1,y1),(x2,y2),(255,0,0),5)
+            cv2.line(line_image,(x1,y1),(x2,y2),(255,255,255),5)
 
-    # Draw the lines on the  image
-    lines_edges = cv2.addWeighted(crop_img, 0.8, line_image, 1, 0)
-    image = draw_lines(lines_edges)
-
+    image = line_image
     return image
+
+def process_image_Mask(image):
+    crop_img = crop_image(image)
+    
+    gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
+    blur = cv2.medianBlur(gray, 5)
+    lower = np.array(HSV_LOWER, dtype="uint8")
+    upper = np.array(HSV_UPPER, dtype="uint8")
+    mask = cv2.inRange(blur, lower, upper)
+
+    cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    cv2.fillPoly(mask, cnts, (255,255,255))
+
+    return mask
 
 def draw_lines(img):
     h, w, c = img.shape
 
     for i in range(3):
-        start_point = (0, int(((h-20)/2)*i)+10)
-        end_point = (w, int(((h-20)/2)*i)+10)
-        color = (0, 0, 0)
+        start_point = (0, int(((h-60)/2)*i)+30)
+        end_point = (w, int(((h-60)/2)*i)+30)
+        color = (255, 255, 255)
         thickness = 3
 
         img = cv2.line(img, start_point, end_point, color, thickness)

@@ -8,10 +8,19 @@ def get_data_point():
     # Get image from camera
     cam = cv2.VideoCapture(0)
     ret, frame = cam.read()
-
+    # frame = cv2.imread("C:\\Users\\reiluc17\\Downloads\\py\\frame1.jpg")
     # Process image
+
     image = process_image_Mask(frame)
-    image = draw_lines(image)
+    image = resize_image(image)
+
+    arr = np.zeros((60,60))
+    for point in detect_intersections(image):
+        arr[point[0]][point[1]] = 1
+        pass
+    # image = draw_lines(image)
+    # cv2.imshow("1",image)
+    # cv2.waitKey(0)
 
     # Get steering angle and speed
     angle = 0
@@ -22,10 +31,36 @@ def get_data_point():
 
     return data_point
 
+def detect_intersections(image):
+    h, w = image.shape
+    points = []
 
+    for i in range(3):
+        height = int((h/4)*(i+1))
+        index = 0
+        while index < len(image[height])//2:
+            if image[height][index] == 255:
+                points.append((height, index))
+                break
+            index += 1
+            pass
 
-# Implementierts de methode
-#TODO: compress image
+        index = len(image[height])-1
+        while index >= len(image[height])//2:
+            if image[height][index] == 255:
+                points.append((height, index))
+                break
+            index -=1
+            pass
+    return points
+    pass
+
+def resize_image(image):
+    dim = (60, 60)
+    image = cv2.resize(image, dim)
+    return image
+    pass
+
 
 def crop_image(image):
     h, w, c = image.shape
@@ -78,17 +113,18 @@ def process_image_Mask(image):
     return mask
 
 def draw_lines(img):
-    h, w, c = img.shape
+    h, w = img.shape
 
     for i in range(3):
-        start_point = (0, int(((h-60)/2)*i)+30)
-        end_point = (w, int(((h-60)/2)*i)+30)
+        height = int((h/4)*(i+1))
+        start_point = (0, height)
+        end_point = (w, height)
         color = (255, 255, 255)
-        thickness = 3
+        thickness = 1
 
         img = cv2.line(img, start_point, end_point, color, thickness)
 
     return img
 
 if __name__ == "__main__":
-    get_data_point()
+    print(get_data_point())

@@ -19,7 +19,7 @@ def get_data_point():
         arr[point[0]][point[1]] = 1
         pass
     # image = draw_lines(image)
-    # cv2.imshow("1",image)
+    # cv2.imshow("1",arr)
     # cv2.waitKey(0)
 
     # Get steering angle and speed
@@ -27,7 +27,7 @@ def get_data_point():
     speed = 0
 
     # Put frame, speed and angle together
-    data_point = np.array([image, speed, angle])
+    data_point = np.array([arr, speed, angle])
 
     return data_point
 

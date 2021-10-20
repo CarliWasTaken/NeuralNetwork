@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 
 HSV_LOWER = [40, 0, 80]
 HSV_UPPER = [180, 150, 225]
@@ -29,7 +30,7 @@ def get_data_point():
     # Put frame, speed and angle together
     data_point = np.array([arr, speed, angle])
 
-    return data_point
+    return image
 
 def detect_intersections(image):
     h, w = image.shape

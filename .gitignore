@@ -1,4 +1,5 @@
 /testImages/
 /__pycache__/
 
-/RawTestdaten
+*/RawTestdaten
+*/network_data

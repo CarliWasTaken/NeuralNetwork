@@ -3,6 +3,7 @@ from typing import *
 import numpy as np
 import scipy.special
 import matplotlib.pyplot as plt
+import utils, angles
 
 class ACustomNN:
         def __init__(self, input_nodes :int, hidden_nodes :int, output_nodes :int, learning_rate :float, import_network=False):
@@ -26,7 +27,7 @@ class ACustomNN:
         def train(self, input_list, target_list):
             inputs = np.array(input_list, ndmin=2).T
             
-            target_list = (lambda x : x[0])(target_list) # use only the 'steer' value
+            
             targets = np.array(target_list)
 
 
@@ -79,13 +80,19 @@ class ACustomNN:
 def main():
     
     # the steering angles
-    targets :np.ndarray = np.load('labels.npy')
+    # targets :np.ndarray = np.load('labels.npy')
+    # targets = (lambda x : x[0])(targets) # use only the 'steer' value
+    targets = np.array(angles.ANGLES)
+    print(targets.shape)
     
     # the images
-    inputs :np.ndarray = np.load('images.npy')
+    # inputs :np.ndarray = np.load('images.npy')
+    images = utils.get_images("Testdaten/")
+    inputs = np.array(images)
     
     print(inputs.shape)
     print(type(inputs[0]))
+    
     
     input_nodes :int = inputs.shape[1] * inputs.shape[2] * inputs.shape[3] # all pixel values of an image
     hidden_nodes :int = 100
@@ -107,7 +114,7 @@ def main():
     
     outputs = network.query(inputs[0].flatten())
     print('outputs: ', outputs)
-    print('should be: ', targets[0][0])
+    print('should be: ', targets[98])
     
 
 

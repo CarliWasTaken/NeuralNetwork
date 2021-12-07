@@ -4,8 +4,8 @@ from editor import ImageEditor
 from cam import Camera
 
 class Image:
-    HSV_LOWER: list[int] = [40, 0, 80]
-    HSV_UPPER: list[int] = [180, 150, 225]
+    HSV_LOWER = [40, 0, 80]
+    HSV_UPPER = [180, 150, 225]
 
     def __init__(self, dev: bool):
         self.__image: list[int] = []
@@ -18,14 +18,14 @@ class Image:
         self.__speed: int = 0
         pass
 
-    def set_HSV_LOWER(self, lower: list[int]):
+    def set_HSV_LOWER(self, lower):
         if len(lower) != 3:
             print("rejected")
             return
         self.HSV_LOWER = lower
         pass
 
-    def set_HSV_UPPER(self, upper: list[int]):
+    def set_HSV_UPPER(self, upper):
         if len(upper) != 3:
             print("rejected")
             return
@@ -59,7 +59,7 @@ class Image:
         self.__speed = speed
         self.__angle = angle
 
-    def get_speed_and_angle(self) -> tuple[int, int]:
+    def get_speed_and_angle(self) -> 'tuple[int, int]':
         return (self.__speed, self.__angle)
 
     
@@ -70,7 +70,7 @@ class Image:
             pass
         pass
 
-    def __detect_intersections(self) -> list[int]:
+    def __detect_intersections(self) -> 'list[int]':
         points = []
 
         for height in self.__get_line_heights():

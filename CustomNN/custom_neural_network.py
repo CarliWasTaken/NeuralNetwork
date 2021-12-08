@@ -10,19 +10,36 @@ import random
 # np.random.seed(1)
 
 class CustomNeuralNetwork:
-    def __init__(self, input_nodes :int, hidden_nodes :int, output_nodes :int, learning_rate :float, import_network=False):
+    def __init__(self, input_nodes :int, hidden_nodes :int, output_nodes :int, learning_rate :float, weights :Tuple[np.ndarray, np.ndarray]=None):
+        '''Creates a wonderful Neural Network (NN)
+        
+        Parameters
+        
+            input_nodes :int
+                The number of input nodes
+            hidden_nodes :int
+                The number of hidden nodes
+            output_nodes :int
+                The number of output nodes
+            learning_rate :float
+                The learning rate of the network
+            weights :Tuple[np.ndarray, np.ndarray], optional
+                The weights of the network. If not given, the weights are initialized randomly
+                Structure: (weights_input_hidden, weights_hidden_output)
+        
+        '''
+  
         self.i_nodes = input_nodes
         self.h_nodes = hidden_nodes
         self.o_nodes = output_nodes
 
         self.learning_rate = learning_rate
 
-        if import_network:
-            with open('network_data/neuralnet.npy', 'rb') as f:
-                self.w_input_hidden = np.load(f)
-                self.w_hidden_output = np.load(f)
+        # initialize weights (or use the given ones)
+        if weights:
+            self.w_input_hidden = weights[0]
+            self.w_hidden_output = weights[1]
         else:
-            
             self.w_input_hidden = np.random.rand(self.h_nodes, self.i_nodes) - 0.5
             self.w_hidden_output = np.random.rand(self.o_nodes, self.h_nodes) - 0.5
             
@@ -35,6 +52,17 @@ class CustomNeuralNetwork:
         self.activiation_function = lambda x : scipy.special.expit(x) # sigmoid
 
     def train(self, input_list, target_list):
+        '''Trains the network with the given input and target
+        
+        Parameters
+        
+            input_list :np.ndarray
+                The list of input_nodes (= one image)
+            target_list :np.ndarray
+                The list of output_nodes (= percentages for: left, right, straight)
+        
+        '''
+        
         inputs = np.array(input_list, ndmin=2).T
         # print('inputs shape:', inputs.shape)
         
@@ -71,9 +99,22 @@ class CustomNeuralNetwork:
         self.w_input_hidden += self.learning_rate * np.dot((hidden_errors * h_outputs * (1 - h_outputs)),  np.transpose(inputs))
 
         pass
-    
-    # input -> ann -> output
-    def query(self, input_list):
+     
+    def query(self, input_list :np.ndarray) -> np.ndarray:
+        '''Uses the network to predict the output of a given input
+        
+        Parameters
+        
+            input_list :np.ndarray
+                the list of input_nodes (= one image)
+        
+        Returns
+        
+            output_nodes :np.ndarray
+                the list of output_nodes (= percentages for: left, right, straight)
+        '''
+        # input -> ann -> output
+        
         # aufdrösseln der input_list in etwas brauchbares
         inputs = np.array(input_list, ndmin=2).T
         
@@ -93,6 +134,8 @@ class CustomNeuralNetwork:
         return final_outputs
     
     def debug_net(self):
+        '''prints all the weights of the network'''
+        
         print('w_input_hidden')
         print(self.w_input_hidden)
         print('w_hidden_output')
@@ -100,13 +143,41 @@ class CustomNeuralNetwork:
 
         pass
     
-    def save(self, filename):
+    def save(self, filename :str):
+        '''Saves all the weights of the network to a file 
+        
+        using the following structure:
+        
+            - weights_input_hidden
+            - weights_hidden_output
+        
+        Note: The learning rate is not saved
+        
+        Parameters
+        
+            filename :str
+                The name of the file (.npy)
+        
+        '''
         with open(filename, 'wb') as f:
             np.save(f, self.w_input_hidden)
             np.save(f, self.w_hidden_output)
     
     @classmethod            
-    def import_neural_net(cls, filename, learning_rate=0.2):
+    def import_neural_net(cls, filename :str, learning_rate :float = 0.2):
+        '''Imports all the weights for the NN from a given file
+        Note: The learning rate is not imported.
+        
+        Parameters
+        
+            filename: str 
+                The Name of the file to import the weights from (.npy)
+                File-Structure: weights_input_hidden, weights_hidden_output
+            learning_rate: float, optional (default=0.2)
+                The learning rate of the NN
+        '''
+        
+        
         with open(filename, 'rb') as f:
             print('importing network...')
             
@@ -120,7 +191,7 @@ class CustomNeuralNetwork:
             hidden_nodes = w_hidden_output.shape[1]
             output_nodes = w_hidden_output.shape[0]
             
-            nn = CustomNeuralNetwork(input_nodes, hidden_nodes, output_nodes, learning_rate, import_network=True)
+            nn = CustomNeuralNetwork(input_nodes, hidden_nodes, output_nodes, learning_rate, weights=(w_input_hidden, w_hidden_output))
             return nn
 
 
@@ -201,9 +272,7 @@ def main():
 
 if __name__ == '__main__':
     
-    
-    
-    main()
+    # main()
     
     
     pass

@@ -1,6 +1,6 @@
 
-**/__pycache__/
+**/__pycache__
 
-CustomNN/RawTestdaten/
-CustomNN/network_data
+/CustomNN/RawTestData
+/CustomNN/network_data
 

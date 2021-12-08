@@ -1,7 +1,6 @@
-/testImages/
-/__pycache__/
-/CustomNN/__pycache__/
 
-*/RawTestdaten
-*/network_data
+**/__pycache__/
+
+CustomNN/RawTestdaten/
+CustomNN/network_data
 

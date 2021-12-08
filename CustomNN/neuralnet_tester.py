@@ -216,7 +216,7 @@ class NeuralnetTester:
     
     
 def main():
-    input_dirs = ['Testdaten/left', 'Testdaten/right', 'Testdaten/Straight']
+    input_dirs = ['TestData/left', 'TestData/right', 'TestData/Straight']
     
     # use this one for testing only
     # nnt = NeuralnetTester(paths_to_input_directories=input_dirs, targets=angles.ANGLES, import_weight_path="network_data/neuralnet.npy")

@@ -51,7 +51,7 @@ def down_scale(path_in, path_out):
         
 
 if __name__ == '__main__':
-    down_scale("RawTestdaten/left/", "Testdaten/left/")
-    down_scale("RawTestdaten/right/", "Testdaten/right/")
-    down_scale("RawTestdaten/Straight/", "Testdaten/Straight/")
+    down_scale("RawTestData/left/", "TestData/left/")
+    down_scale("RawTestData/right/", "TestData/right/")
+    down_scale("RawTestData/Straight/", "TestData/Straight/")
 

@@ -107,7 +107,7 @@ class CustomNeuralNetwork:
     
     @classmethod            
     def import_neural_net(cls, filename, learning_rate=0.2):
-        with open('network_data/neuralnet.npy', 'rb') as f:
+        with open(filename, 'rb') as f:
             print('importing network...')
             
             w_input_hidden = np.load(f)

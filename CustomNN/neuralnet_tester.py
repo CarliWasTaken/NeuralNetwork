@@ -6,6 +6,7 @@ import scipy.special
 import matplotlib.pyplot as plt
 import utils, angles
 import random
+import os
 
 from custom_neural_network import CustomNeuralNetwork
 
@@ -13,7 +14,7 @@ from custom_neural_network import CustomNeuralNetwork
 # np.random.seed(1)
 
 class NeuralnetTester:
-    def __init__(self, inputs=None, targets=None, paths_to_input_directories :List[str] = None, path_to_input_file :str = None, path_to_target_file :str = None, import_weight_path :str = None, input_nodes :int = 1200, hidden_nodes :int = 3000, output_nodes :int = 3, learning_rate :float = 0.2):
+    def __init__(self, inputs=None, targets=None, paths_to_input_directories :List[str] = None, path_to_data :str = None, path_to_target_file :str = None, import_weight_path :str = None, input_nodes :int = 1200, hidden_nodes :int = 3000, output_nodes :int = 3, learning_rate :float = 0.2):
         
         '''The wonderful constructor of the NeuralnetTester class
         
@@ -42,8 +43,11 @@ class NeuralnetTester:
         
             
         # prepare input data (training + test data)
-        self.inputs = inputs
-        self.targets = np.array(targets)
+        # self.inputs = inputs
+        # self.targets = np.array(targets)
+        
+        if path_to_data:
+            self.load_data(path_to_data)
         
         # load data from directories
         if paths_to_input_directories:
@@ -55,6 +59,7 @@ class NeuralnetTester:
                 _inputs.extend(images)
                 print(f'found {len(images)} images')
             self.inputs = _inputs
+            
         
         # convert to numpy array    
         self.inputs = np.array(self.inputs)
@@ -127,16 +132,21 @@ class NeuralnetTester:
         for e in range(epochs):
             print(f'\n### Epoch number {e} ###')
             x = 0
+            
+            if shuffle:
+                random.shuffle(self.training_indices)
+                
             for i in self.training_indices:
                 x += 1
                 print(f'--- Epoch {e}, Image number {x} with index {i} ---', end='\r')
+                
                 values :np.ndarray = (self.inputs[i] / 255.0 * 0.99)
-                targets = np.zeros(self.nn.o_nodes) + 0.01
-                if self.targets[i] < len(targets): # only set target to 0.99 if index is valid
-                    targets[int(self.targets[i])] = 0.99
+                targets = np.array([self.targets[i]])
+                print('\nshape:', targets.shape)
+                return
+                
                 self.nn.train(values.flatten(), targets)
-            if shuffle:
-                random.shuffle(self.training_indices)
+                
         
         print('\n\n!!!! training finished !!!')
         
@@ -209,22 +219,35 @@ class NeuralnetTester:
         print('should be index: ', target_index, '\n')
         
         return actual_index == target_index
-                
-            
+     
+    @classmethod           
+    def manipulate_images(cls, path_in, path_out):
+        utils.down_scale(path_in, path_out)  
+        
+    def load_data(self, path :str):
+        
+        inputs, targets = utils.load_data(path)
+        self.inputs = inputs
+        self.targets = targets
+        
+        
+        pass
         
         
     
     
 def main():
     input_dirs = ['TestData/left', 'TestData/right', 'TestData/Straight']
+    path = 'Data/data/training_data/'
     
     # use this one for testing only
     # nnt = NeuralnetTester(paths_to_input_directories=input_dirs, targets=angles.ANGLES, import_weight_path="network_data/neuralnet.npy")
     
     # use this one for training (and maybe testing)
-    nnt = NeuralnetTester(paths_to_input_directories=input_dirs, targets=angles.ANGLES, hidden_nodes=3000, output_nodes=3, learning_rate=0.2)
+    # nnt = NeuralnetTester(paths_to_input_directories=input_dirs, targets=angles.ANGLES, hidden_nodes=3000, output_nodes=3, learning_rate=0.2)
+    nnt = NeuralnetTester(path_to_data=path, targets=angles.ANGLES, hidden_nodes=3000, output_nodes=1, learning_rate=0.2)
     
-    nnt.train(epochs=2, auto_save_after_training=True, shuffle=True)
+    nnt.train(epochs=2, auto_save_after_training=False, shuffle=True)
     nnt.test()
     
     pass

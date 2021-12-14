@@ -30,6 +30,7 @@ def down_scale(path_in, path_out):
         img = cv2.imread(path, 1)
         # img = cv2.GaussianBlur(img,(81,81),0) 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        cv2.cvtColor(img, cv2.COLOR_)
         
         
         # lower bound and upper bound 
@@ -50,8 +51,42 @@ def down_scale(path_in, path_out):
         cv2.imwrite(path_out + image.title(), img)
         
 
-if __name__ == '__main__':
-    down_scale("RawTestData/left/", "TestData/left/")
-    down_scale("RawTestData/right/", "TestData/right/")
-    down_scale("RawTestData/Straight/", "TestData/Straight/")
+def load_data(path):
+    # iterate over all images in data folder
+    files = os.listdir(path)
 
+    # 1. Extract all of the images:
+    images = [file for file in files if file.endswith(('jpg', 'png', 'Jpg'))]
+
+    training_images = []
+    training_labels = []
+
+    # 2. Loop over every image:
+    for image in images:
+        img = cv2.imread(path+image, 1)
+        label = image.split('_')[2].replace('.jpg', '')
+        
+        # remove upper 1/3 of image
+        img =  img[img.shape[0]//3:, :]
+
+        training_images.append(img)
+        training_labels.append(label)
+    return (training_images, training_labels)
+        
+def rename(path):
+    counter = 0
+    for file in os.listdir(path):
+        if file.endswith('.jpg'):
+            label = file.split('_')[1].replace('.jpg', '')
+            os.rename(os.path.join(path, file), os.path.join(path, f'image_{counter}_{label}.jpg'))
+            counter += 1
+
+if __name__ == '__main__':
+    '''down_scale("RawTestData/left/", "TestData/left/")
+    down_scale("RawTestData/right/", "TestData/right/")
+    down_scale("RawTestData/Straight/", "TestData/Straight/")'''
+    
+    
+    data = format_training_data('Data/data/training_data/')
+    print(data)
+    # rename('Data/data/training_data/')

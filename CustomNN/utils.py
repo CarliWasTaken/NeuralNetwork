@@ -13,7 +13,14 @@ import cv2
 
 def get_images(path):
     files = os.listdir(path)
+    # images = []
+    # for file in files:
+    #     if file.endswith(('jpg', 'png', 'Jpg')):
+    #         image = cv2.imread(os.path.join(path, file.title()),0)
+    #         images.append(image)
+            
     return [cv2.imread(os.path.join(path, file.title()),0) for file in files if file.endswith(('jpg', 'png', 'Jpg'))] # 0 for gray
+    # return images
 
 def down_scale(path_in, path_out):
 
@@ -51,26 +58,40 @@ def down_scale(path_in, path_out):
         cv2.imwrite(path_out + image.title(), img)
         
 
+
 def load_data(path):
     # iterate over all images in data folder
     files = os.listdir(path)
 
     # 1. Extract all of the images:
     images = [file for file in files if file.endswith(('jpg', 'png', 'Jpg'))]
-
+    
     training_images = []
     training_labels = []
 
     # 2. Loop over every image:
     for image in images:
-        img = cv2.imread(path+image, 1)
+        img = cv2.imread(path+image, 0)
         label = image.split('_')[2].replace('.jpg', '')
         
         # remove upper 1/3 of image
         img =  img[img.shape[0]//3:, :]
+        
+        temp_img = cv2.Canny(img, 50, 70)
+        # temp_img = cv2.resize(temp_img, (0, 0), fx=10, fy=10)
+        # cv2.imshow('Half Image', temp_img)
+        # cv2.imshow('Full Image', img)
+        # cv2.moveWindow('Full Image', 1700, 800)
+        # cv2.moveWindow('Half Image', 1700, 1000)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        # raise Exception('remove this part')
+        img = temp_img
+        
 
         training_images.append(img)
-        training_labels.append(label)
+        training_labels.append(float(label))
+        
     return (training_images, training_labels)
         
 def rename(path):
@@ -87,6 +108,6 @@ if __name__ == '__main__':
     down_scale("RawTestData/Straight/", "TestData/Straight/")'''
     
     
-    data = format_training_data('Data/data/training_data/')
-    print(data)
+    # data = format_training_data('Data/data/training_data/')
+    # print(data)
     # rename('Data/data/training_data/')

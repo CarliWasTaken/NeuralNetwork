@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import utils, angles
 import random
 import os
+import cv2
 
 from custom_neural_network import CustomNeuralNetwork
 
@@ -14,7 +15,7 @@ from custom_neural_network import CustomNeuralNetwork
 # np.random.seed(1)
 
 class NeuralnetTester:
-    def __init__(self, inputs=None, targets=None, paths_to_input_directories :List[str] = None, path_to_data :str = None, path_to_target_file :str = None, import_weight_path :str = None, input_nodes :int = 1200, hidden_nodes :int = 3000, output_nodes :int = 3, learning_rate :float = 0.2):
+    def __init__(self, inputs=None, targets=None, paths_to_input_directories :List[str] = None, path_to_data :str = None, path_to_target_file :str = None, path_to_target_dir :str = None, import_weight_path :str = None, input_nodes :int = 1200, hidden_nodes :int = 3000, output_nodes :int = 3, learning_rate :float = 0.2):
         
         '''The wonderful constructor of the NeuralnetTester class
         
@@ -41,36 +42,40 @@ class NeuralnetTester:
         
         '''
         
-            
-        # prepare input data (training + test data)
-        # self.inputs = inputs
-        # self.targets = np.array(targets)
+
         
+        # load data (inputs + targets)
         if path_to_data:
             self.load_data(path_to_data)
         
         # load data from directories
-        if paths_to_input_directories:
-            print('\nloading input data from directories...')
-            _inputs = []
-            for a_dir in paths_to_input_directories:
-                print(f'directory {a_dir}')
-                images = utils.get_images(a_dir)
-                _inputs.extend(images)
-                print(f'found {len(images)} images')
-            self.inputs = _inputs
-            
-        
+        # if paths_to_input_directories:
+        #     print('\nloading input data from directories...')
+        #     _inputs = []
+        #     for a_dir in paths_to_input_directories:
+        #         print(f'directory {a_dir}')
+        #         images = utils.get_images(a_dir)
+        #         _inputs.extend(images)
+        #         print(f'found {len(images)} images')
+        #     self.inputs = _inputs
+              
         # convert to numpy array    
         self.inputs = np.array(self.inputs)
-        self.targets = np.array(self.targets)
+        self.original_targets = np.array(self.targets)
+        self.targets = np.array(self.targets) / 2.0 + 0.5 # normalize targets (eliminate negative values)
+        
+        # print(f'targets {self.targets[200:205]}')
+        # print(f'otargets {self.original_targets[200:205]}')
+        
         
         print(f'Input data looks like: {self.inputs.shape}')
         print(f'Target data looks like: {self.targets.shape}')
         
         
         # split into training and test data    
-        self.training_indices, self.test_indices = NeuralnetTester.get_randomized_training_and_test_indices(len(self.inputs))
+        # self.training_indices, self.test_indices = NeuralnetTester.get_randomized_training_and_test_indices(len(self.inputs))
+        self.training_indices = [i for i in range(5, len(self.inputs))]
+        self.test_indices = [i for i in range(0, 5)]
         print(f'Splitted into training and test data with: {len(self.training_indices)} training images and {len(self.test_indices)} test images')
         
         input_nodes = self.inputs.shape[1] * self.inputs.shape[2]
@@ -142,8 +147,6 @@ class NeuralnetTester:
                 
                 values :np.ndarray = (self.inputs[i] / 255.0 * 0.99)
                 targets = np.array([self.targets[i]])
-                print('\nshape:', targets.shape)
-                return
                 
                 self.nn.train(values.flatten(), targets)
                 
@@ -194,6 +197,10 @@ class NeuralnetTester:
         print('-'*50)
         return success_rate
     
+    def test2(self):
+        for i in range(0, 100):
+            self.query(i)
+    
     def query(self, query_index :int) -> bool:
         '''used to query the network with a single image
         
@@ -210,15 +217,21 @@ class NeuralnetTester:
         '''
         
         outputs :np.ndarray = self.nn.query(self.inputs[query_index].flatten())
+        
         actual_index = outputs.argmax()
-        target_index = self.targets[query_index]
+        target = self.targets[query_index]
         
         print('.'*30)
-        print(f'outputs [{query_index}]: \n', outputs)
-        print('\n --> actual_index: ', actual_index)
-        print('should be index: ', target_index, '\n')
+        print(f'[{query_index}]:')
+        print(f'\tactual: {outputs[actual_index]}')
+        print('\tshould be: ', target, '\n')
         
-        return actual_index == target_index
+        cv2.imshow('Image', self.inputs[query_index])
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        
+        
+        return outputs[actual_index] == target
      
     @classmethod           
     def manipulate_images(cls, path_in, path_out):
@@ -230,6 +243,8 @@ class NeuralnetTester:
         self.inputs = inputs
         self.targets = targets
         
+        print(f'inputs shape: {np.array(self.inputs).shape}')
+        print(f'targets shape: {np.array(self.targets).shape}')
         
         pass
         
@@ -237,18 +252,20 @@ class NeuralnetTester:
     
     
 def main():
-    input_dirs = ['TestData/left', 'TestData/right', 'TestData/Straight']
+    # input_dirs = ['TestData/left', 'TestData/right', 'TestData/Straight']
     path = 'Data/data/training_data/'
     
     # use this one for testing only
-    # nnt = NeuralnetTester(paths_to_input_directories=input_dirs, targets=angles.ANGLES, import_weight_path="network_data/neuralnet.npy")
+    nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.2, import_weight_path="network_data/neuralnet.npy")
+    # nnt.query(5)
+    # nnt.test()
+    nnt.test2()
     
     # use this one for training (and maybe testing)
     # nnt = NeuralnetTester(paths_to_input_directories=input_dirs, targets=angles.ANGLES, hidden_nodes=3000, output_nodes=3, learning_rate=0.2)
-    nnt = NeuralnetTester(path_to_data=path, targets=angles.ANGLES, hidden_nodes=3000, output_nodes=1, learning_rate=0.2)
-    
-    nnt.train(epochs=2, auto_save_after_training=False, shuffle=True)
-    nnt.test()
+    # nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.2)
+    # nnt.train(epochs=2, auto_save_after_training=True, shuffle=True)
+    # nnt.test()
     
     pass
     

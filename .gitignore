@@ -5,3 +5,5 @@
 /CustomNN/network_data
 
 /CustomNN/Data
+/nn_tensorflow/tf
+/nn_tensorflow/data

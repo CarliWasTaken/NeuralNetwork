@@ -49,11 +49,16 @@ model.summary()
 model.fit(
     images, 
     labels, 
-    epochs=5,
+    epochs=1000,
     batch_size=10,
     validation_split=0.1,
     shuffle=True
 )
+
+model.save('model.h5')
+'''
+
+model = keras.models.load_model('model.h5')
 
 for i, img in enumerate(images):
     
@@ -62,4 +67,4 @@ for i, img in enumerate(images):
     print(f"Prediction: {model(img)}")
     img = img.reshape(40, 80)
     cv2.imshow('image', img)
-    cv2.waitKey(0)
+    cv2.waitKey(0)'''

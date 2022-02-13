@@ -4,6 +4,7 @@ import os
 import glob
 
 import numpy as np
+import cupy as np
 import cv2
 
 # picture = Image.open("Compressed_image-1-compressed.jpg")
@@ -59,7 +60,9 @@ def down_scale(path_in, path_out):
         
 
 
-def load_data(path):
+def load_training_data(path, scale :float = 0.4): 
+    '''loads the data (training images + targets (=labels within the filename)) from the given path'''
+    
     # iterate over all images in data folder
     files = os.listdir(path)
 
@@ -72,27 +75,44 @@ def load_data(path):
     # 2. Loop over every image:
     for image in images:
         img = cv2.imread(path+image, 0)
-        label = image.split('_')[2].replace('.jpg', '')
+        label = image.split('_')[1].replace('.jpg', '')
         
-        # remove upper 1/3 of image
-        img =  img[img.shape[0]//3:, :]
-        
-        temp_img = cv2.Canny(img, 50, 70)
-        # temp_img = cv2.resize(temp_img, (0, 0), fx=10, fy=10)
-        # cv2.imshow('Half Image', temp_img)
-        # cv2.imshow('Full Image', img)
-        # cv2.moveWindow('Full Image', 1700, 800)
-        # cv2.moveWindow('Half Image', 1700, 1000)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-        # raise Exception('remove this part')
-        img = temp_img
-        
+        img = prepare_image(img, scale=scale)
 
         training_images.append(img)
         training_labels.append(float(label))
         
-    return (training_images, training_labels)
+    # 3. recursively walk through the folders
+    training_data_from_sub_dirs = [load_training_data(f'{path}/{subdir}/') for subdir in next(os.walk(path))[1]]
+    training_data_from_sub_dirs.append((training_images, training_labels))
+    
+    training_data_from_sub_dirs = list(filter(lambda x: x[0] != [], training_data_from_sub_dirs)) # remove empty lists
+    
+    return training_data_from_sub_dirs
+
+def prepare_image(img, scale :float = 0.4):
+    '''manipulates the image to make it easier to process'''
+    
+    # remove upper part of image
+    img = img[int(img.shape[0]/1.9):, :]
+    
+    # extract lines
+    
+    # |---------------------|
+    # V-- experiment here --V
+    img = cv2.resize(img, (0, 0), fx=scale, fy=scale)
+    img = cv2.Canny(img, 50, 70)
+    
+    
+    # temp_img = cv2.resize(temp_img, (0, 0), fx=10, fy=10)
+    # cv2.imshow('Half Image', temp_img)
+    #cv2.imshow('Full Image', img)
+    # cv2.moveWindow('Full Image', 1700, 800)
+    # cv2.moveWindow('Half Image', 1700, 1000)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    #raise Exception('remove this part')
+    return img
         
 def rename(path):
     counter = 0
@@ -102,12 +122,8 @@ def rename(path):
             os.rename(os.path.join(path, file), os.path.join(path, f'image_{counter}_{label}.jpg'))
             counter += 1
 
-if __name__ == '__main__':
-    '''down_scale("RawTestData/left/", "TestData/left/")
-    down_scale("RawTestData/right/", "TestData/right/")
-    down_scale("RawTestData/Straight/", "TestData/Straight/")'''
-    
-    
+if __name__ == '__main__': 
+    pass
     # data = format_training_data('Data/data/training_data/')
     # print(data)
     # rename('Data/data/training_data/')

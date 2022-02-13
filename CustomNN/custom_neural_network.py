@@ -5,12 +5,13 @@ import scipy.special
 import matplotlib.pyplot as plt
 import utils, angles
 import random
+import cupy as cp
 
 # random.seed(1)
-# np.random.seed(1)
+# cp.random.seed(1)
 
 class CustomNeuralNetwork:
-    def __init__(self, input_nodes :int, hidden_nodes :int, output_nodes :int, learning_rate :float, weights :Tuple[np.ndarray, np.ndarray]=None):
+    def __init__(self, input_nodes :int, hidden_nodes :int, output_nodes :int, learning_rate :float, weights :Tuple[cp.ndarray, cp.ndarray]=None):
         '''Creates a wonderful Neural Network (NN)
         
         Parameters
@@ -23,7 +24,7 @@ class CustomNeuralNetwork:
                 The number of output nodes
             learning_rate :float
                 The learning rate of the network
-            weights :Tuple[np.ndarray, np.ndarray], optional
+            weights :Tuple[cp.ndarray, cp.ndarray], optional
                 The weights of the network. If not given, the weights are initialized randomly
                 Structure: (weights_input_hidden, weights_hidden_output)
         
@@ -40,14 +41,16 @@ class CustomNeuralNetwork:
             self.w_input_hidden = weights[0]
             self.w_hidden_output = weights[1]
         else:
-            self.w_input_hidden = np.random.rand(self.h_nodes, self.i_nodes) - 0.5
-            self.w_hidden_output = np.random.rand(self.o_nodes, self.h_nodes) - 0.5
+            self.w_input_hidden = cp.random.rand(self.h_nodes, self.i_nodes) - 0.5
+            self.w_hidden_output = cp.random.rand(self.o_nodes, self.h_nodes) - 0.5
             
         print('creating NN using the following parameters:')
         print('input_nodes: ', input_nodes)
         print('hidden_nodes: ', hidden_nodes)
         print('output_nodes: ', output_nodes)
         print('learning_rate: ', learning_rate)
+        
+        expit = cp.ElementwiseKernel('float64 x', 'float64 y', 'y = 1 / (1 + exp(-x))', 'expit')
 
         self.activiation_function = lambda x : scipy.special.expit(x) # sigmoid
 
@@ -56,26 +59,26 @@ class CustomNeuralNetwork:
         
         Parameters
         
-            input_list :np.ndarray
+            input_list :cp.ndarray
                 The list of input_nodes (= one image)
-            target_list :np.ndarray
+            target_list :cp.ndarray
                 The list of output_nodes (= percentages for: left, right, straight)
         
         '''
         
-        inputs = np.array(input_list, ndmin=2).T
+        inputs = cp.array(input_list, ndmin=2).T
         # print('inputs shape:', inputs.shape)
         
         
-        targets = np.array([target_list]).T
+        targets = cp.array([target_list]).T
         # print(targets)
         # print('targets shape:', targets.shape)
 
 
-        h_inputs = np.dot(self.w_input_hidden, inputs)
-        h_outputs = self.activiation_function(h_inputs)
-        final_inputs = np.dot(self.w_hidden_output, h_outputs)
-        final_outputs = self.activiation_function(final_inputs)
+        h_inputs = cp.dot(self.w_input_hidden, inputs)
+        h_outputs = cp.asarray(self.activiation_function(h_inputs.get()))
+        final_inputs = cp.dot(self.w_hidden_output, h_outputs)
+        final_outputs = cp.asarray(self.activiation_function(final_inputs.get()))
         
         # print('w_input_hidden shape:', self.w_input_hidden.shape)
         # print('w_hidden_output shape:', self.w_hidden_output.shape)
@@ -90,46 +93,46 @@ class CustomNeuralNetwork:
         # print('output_errors shape:', output_errors.shape)
 
         # errors into hidden layer
-        hidden_errors = np.dot(self.w_hidden_output.T, output_errors)
+        hidden_errors = cp.dot(self.w_hidden_output.T, output_errors)
         # print('hidden_errors shape:', hidden_errors.shape)
 
         # weight adjustments
         # alpha * output_errors * final_outputs * (1 - final_outputs) * transpose(hidden_outputs)
-        self.w_hidden_output += self.learning_rate * np.dot((output_errors * final_outputs *  (1 - final_outputs)),  np.transpose(h_outputs))
-        self.w_input_hidden += self.learning_rate * np.dot((hidden_errors * h_outputs * (1 - h_outputs)),  np.transpose(inputs))
+        self.w_hidden_output += self.learning_rate * cp.dot((output_errors * final_outputs *  (1 - final_outputs)),  cp.transpose(h_outputs))
+        self.w_input_hidden += self.learning_rate * cp.dot((hidden_errors * h_outputs * (1 - h_outputs)),  cp.transpose(inputs))
 
         pass
      
-    def query(self, input_list :np.ndarray) -> np.ndarray:
+    def query(self, input_list :cp.ndarray) -> cp.ndarray:
         '''Uses the network to predict the output of a given input
         
         Parameters
         
-            input_list :np.ndarray
+            input_list :cp.ndarray
                 the list of input_nodes (= one image)
         
         Returns
         
-            output_nodes :np.ndarray
+            output_nodes :cp.ndarray
                 the list of output_nodes (= percentages for: left, right, straight)
         '''
         # input -> ann -> output
         
         # aufdrösseln der input_list in etwas brauchbares
-        inputs = np.array(input_list, ndmin=2).T
+        inputs = cp.array(input_list, ndmin=2).T
         
 
         # X(h) = I * W(i-h)
-        h_inputs = np.dot(self.w_input_hidden, inputs)
+        h_inputs = cp.dot(self.w_input_hidden, inputs)
 
         # O(h) = sigmoid(X(h)) 
-        h_outputs = self.activiation_function(h_inputs)
+        h_outputs = cp.asarray(self.activiation_function(h_inputs.get()))
 
         # X(o) = O(h) * W(h-o)
-        final_inputs = np.dot(self.w_hidden_output, h_outputs)
+        final_inputs = cp.dot(self.w_hidden_output, h_outputs)
 
         # O = sigmoid(X(o))
-        final_outputs = self.activiation_function(final_inputs)
+        final_outputs = cp.asarray(self.activiation_function(final_inputs.get()))
 
         return final_outputs
     
@@ -160,8 +163,8 @@ class CustomNeuralNetwork:
         
         '''
         with open(filename, 'wb') as f:
-            np.save(f, self.w_input_hidden)
-            np.save(f, self.w_hidden_output)
+            cp.save(f, self.w_input_hidden)
+            cp.save(f, self.w_hidden_output)
     
     @classmethod            
     def import_neural_net(cls, filename :str, learning_rate :float = 0.2):
@@ -181,8 +184,8 @@ class CustomNeuralNetwork:
         with open(filename, 'rb') as f:
             print('importing network...')
             
-            w_input_hidden = np.load(f)
-            w_hidden_output = np.load(f)
+            w_input_hidden = cp.load(f)
+            w_hidden_output = cp.load(f)
             
             print('weights_input_hidden: ', w_input_hidden.shape)
             print('weights_hidden_output: ', w_hidden_output.shape)
@@ -209,11 +212,11 @@ def get_training_and_test_indices(number_of_records, number_of_types=3, number_o
 def main():
     
    
-    target_list = np.array(angles.ANGLES)
+    target_list = cp.array(angles.ANGLES)
     print(target_list.shape)
     
     # the images
-    # inputs :np.ndarray = np.load('images.npy')
+    # inputs :cp.ndarray = cp.load('images.npy')
     directories = ('Testdaten/left', 'Testdaten/right', 'Testdaten/Straight')
     inputs = []
     
@@ -221,7 +224,7 @@ def main():
         images = utils.get_images(d)
         inputs.extend(images)
     
-    inputs = np.array(inputs)
+    inputs = cp.array(inputs)
     
     training_indices, test_indices = get_training_and_test_indices(len(inputs))
     
@@ -246,8 +249,8 @@ def main():
     for i in training_indices:
         x += 1
         print(f'--- Image number {x, i} ---', end='\r')
-        values :np.ndarray = (inputs[i] / 255.0 * 0.99)
-        targets = np.zeros(output_nodes) + 0.01
+        values :cp.ndarray = (inputs[i] / 255.0 * 0.99)
+        targets = cp.zeros(output_nodes) + 0.01
         targets[int(target_list[i])] = 0.99
         network.train(values.flatten(), targets)
     pass

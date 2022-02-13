@@ -294,7 +294,7 @@ def main():
     
     # use this one for training (and maybe testing)
     ### deprecated ### nnt = NeuralnetTester(paths_to_input_directories=input_dirs, targets=angles.ANGLES, hidden_nodes=3000, output_nodes=3, learning_rate=0.2)
-    nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.001, image_scale=0.1)
+    nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.001, image_scale=0.6)
     nnt.train(epochs=10, auto_save_after_training=False, shuffle=True)
     nnt.save('network_data/nn-01.npy')
     nnt.test2(0,2050, show_image=False, output=False)

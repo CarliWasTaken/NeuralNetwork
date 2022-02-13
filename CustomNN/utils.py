@@ -83,7 +83,7 @@ def load_training_data(path, scale :float = 0.4):
         training_labels.append(float(label))
         
     # 3. recursively walk through the folders
-    training_data_from_sub_dirs = [load_training_data(f'{path}/{subdir}/') for subdir in next(os.walk(path))[1]]
+    training_data_from_sub_dirs = [load_training_data(f'{path}/{subdir}/', scale) for subdir in next(os.walk(path))[1]]
     training_data_from_sub_dirs.append((training_images, training_labels))
     
     training_data_from_sub_dirs = list(filter(lambda x: x[0] != [], training_data_from_sub_dirs)) # remove empty lists

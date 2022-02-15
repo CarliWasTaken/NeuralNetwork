@@ -306,7 +306,6 @@ def main():
     np.dot(nnt.nn.w_input_hidden, nnt.inputs[0].flatten())
     nnt.query(0)
     nnt.query(1)
-    
     nnt.query(2)
     
     

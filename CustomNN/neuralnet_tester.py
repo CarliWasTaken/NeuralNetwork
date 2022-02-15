@@ -9,6 +9,7 @@ import random
 import os
 import cv2
 import cupy as cp
+from time import time
 
 
 
@@ -234,7 +235,9 @@ class NeuralnetTester:
         
         '''
         
+        t1 = time()
         outputs :cp.ndarray = self.nn.query(self.inputs[query_index].flatten())
+        print(f'time: {time() - t1}')
         
         actual_index = outputs.argmax()
         target = self.targets[query_index]
@@ -250,7 +253,7 @@ class NeuralnetTester:
             print(f'\tΔ = {abs(target - outputs[actual_index])} \n')
         
         if show_image:
-            cv2.imshow('Image', self.inputs[query_index])
+            cv2.imshow('Image', self.inputs[query_index].get())
             cv2.waitKey(0)
             cv2.destroyAllWindows()
         
@@ -287,17 +290,23 @@ def main():
     path = 'Data/data_2/'
     
     # use this one for testing only
-    # nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.1, import_weight_path="network_data/nn-01.npy")
-    # # # nnt.query(5)
-    # # # nnt.test()
-    # nnt.test2(0,2050, False)
+    nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.001, image_scale=0.4, import_weight_path="network_data/nn-01.npy")
+    # # nnt.query(5)
+    # # nnt.test()
+    # nnt.test2(0,50, show_image=True, output=True)
     
     # use this one for training (and maybe testing)
     ### deprecated ### nnt = NeuralnetTester(paths_to_input_directories=input_dirs, targets=angles.ANGLES, hidden_nodes=3000, output_nodes=3, learning_rate=0.2)
-    nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.001, image_scale=0.6)
-    nnt.train(epochs=10, auto_save_after_training=False, shuffle=True)
-    nnt.save('network_data/nn-01.npy')
-    nnt.test2(0,2050, show_image=False, output=False)
+    # nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.001, image_scale=0.4)
+    # nnt.train(epochs=1, auto_save_after_training=False, shuffle=True)
+    # nnt.save('network_data/nn-01.npy')
+    # nnt.test2(0,3, show_image=False, output=False)
+    # nnt.test2(0,10, show_image=False, output=False)
+    
+    nnt.query(0)
+    nnt.query(1)
+    
+    
     
     # TODO: run again, same settings!!!!!!!!!!!!!!!!!!
     

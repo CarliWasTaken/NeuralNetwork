@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import utils, angles
 import random
 import cupy as cp
+from time import time
 
 # random.seed(1)
 # cp.random.seed(1)
@@ -117,6 +118,7 @@ class CustomNeuralNetwork:
                 the list of output_nodes (= percentages for: left, right, straight)
         '''
         # input -> ann -> output
+        # t1 = time()
         
         # aufdrösseln der input_list in etwas brauchbares
         inputs = cp.array(input_list, ndmin=2).T
@@ -124,15 +126,17 @@ class CustomNeuralNetwork:
 
         # X(h) = I * W(i-h)
         h_inputs = cp.dot(self.w_input_hidden, inputs)
-
+        
         # O(h) = sigmoid(X(h)) 
         h_outputs = cp.asarray(self.activiation_function(h_inputs.get()))
-
+        
         # X(o) = O(h) * W(h-o)
         final_inputs = cp.dot(self.w_hidden_output, h_outputs)
-
+        
         # O = sigmoid(X(o))
         final_outputs = cp.asarray(self.activiation_function(final_inputs.get()))
+        
+        # print('query time:', time() - t1)
 
         return final_outputs
     

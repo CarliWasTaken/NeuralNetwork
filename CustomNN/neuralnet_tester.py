@@ -9,14 +9,14 @@ import random
 import os
 import cv2
 import cupy as cp
-from time import time
+import time
 
 
 
 from custom_neural_network import CustomNeuralNetwork
 
 # random.seed(1)
-# cp.random.seed(1)
+# np.random.seed(1)
 
 class NeuralnetTester:
     def __init__(self, path_to_data :str = None, import_weight_path :str = None, input_nodes :int = 1200, hidden_nodes :int = 3000, output_nodes :int = 3, learning_rate :float = 0.2, image_scale :float = 0.4):
@@ -58,9 +58,9 @@ class NeuralnetTester:
         #     self.inputs = _inputs
               
         # convert to numpy array    
-        self.inputs = cp.array(self.inputs)
-        self.original_targets = cp.array(self.targets)
-        self.targets = cp.array(self.targets) / 2.0 + 0.5 # normalize targets (eliminate negative values)
+        self.inputs = np.array(self.inputs)
+        self.original_targets = np.array(self.targets)
+        self.targets = np.array(self.targets) / 2.0 + 0.5 # normalize targets (eliminate negative values)
         
         # print(f'targets {self.targets[200:205]}')
         # print(f'otargets {self.original_targets[200:205]}')
@@ -144,8 +144,8 @@ class NeuralnetTester:
                 x += 1
                 print(f'--- Epoch {e}, Image number {x} with index {i} ---', end='\r')
                 
-                values :cp.ndarray = (self.inputs[i] / 255.0 * 0.99)
-                targets = cp.array([self.targets[i]])
+                values :np.ndarray = (self.inputs[i] / 255.0 * 0.99)
+                targets = np.array([self.targets[i]])
                 
                 self.nn.train(values.flatten(), targets)
                 
@@ -235,9 +235,9 @@ class NeuralnetTester:
         
         '''
         
-        t1 = time()
-        outputs :cp.ndarray = self.nn.query(self.inputs[query_index].flatten())
-        print(f'time: {time() - t1}')
+        t1 = time.time()
+        outputs :np.ndarray = self.nn.query(self.inputs[query_index].flatten())
+        print(f'time: {time.time() - t1}')
         
         actual_index = outputs.argmax()
         target = self.targets[query_index]
@@ -253,7 +253,7 @@ class NeuralnetTester:
             print(f'\tΔ = {abs(target - outputs[actual_index])} \n')
         
         if show_image:
-            cv2.imshow('Image', self.inputs[query_index].get())
+            cv2.imshow('Image', self.inputs[query_index])
             cv2.waitKey(0)
             cv2.destroyAllWindows()
         
@@ -277,8 +277,8 @@ class NeuralnetTester:
             self.inputs += self.sets[i][0][0]
             self.targets += self.sets[i][0][1]
         
-        print(f'inputs shape: {cp.array(self.inputs).shape}')
-        print(f'targets shape: {cp.array(self.targets).shape}')
+        print(f'inputs shape: {np.array(self.inputs).shape}')
+        print(f'targets shape: {np.array(self.targets).shape}')
         
         pass
         
@@ -303,8 +303,11 @@ def main():
     # nnt.test2(0,3, show_image=False, output=False)
     # nnt.test2(0,10, show_image=False, output=False)
     
+    np.dot(nnt.nn.w_input_hidden, nnt.inputs[0].flatten())
     nnt.query(0)
     nnt.query(1)
+    
+    nnt.query(2)
     
     
     

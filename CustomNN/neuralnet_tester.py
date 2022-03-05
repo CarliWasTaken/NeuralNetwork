@@ -290,21 +290,21 @@ def main():
     path = 'Data/data_2/'
     
     # use this one for testing only
-    nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.001, image_scale=0.4, import_weight_path="network_data/nn-01.npy")
+    # nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.001, image_scale=0.4, import_weight_path="network_data/nn-01.npy")
     # # nnt.query(5)
     # # nnt.test()
     # nnt.test2(0,50, show_image=True, output=True)
     
     # use this one for training (and maybe testing)
     ### deprecated ### nnt = NeuralnetTester(paths_to_input_directories=input_dirs, targets=angles.ANGLES, hidden_nodes=3000, output_nodes=3, learning_rate=0.2)
-    # nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.001, image_scale=0.4)
-    # nnt.train(epochs=1, auto_save_after_training=False, shuffle=True)
-    # nnt.save('network_data/nn-01.npy')
-    # nnt.test2(0,3, show_image=False, output=False)
-    # nnt.test2(0,10, show_image=False, output=False)
+    nnt = NeuralnetTester(path_to_data=path, hidden_nodes=3000, output_nodes=1, learning_rate=0.001, image_scale=0.4)
+    nnt.train(epochs=1, auto_save_after_training=False, shuffle=True)
+    nnt.save('network_data/nn-01.npy')
+    nnt.test2(0,3, show_image=False, output=False)
+    nnt.test2(0,10, show_image=False, output=False)
     
-    nnt.query(0)
-    nnt.query(1)
+    # nnt.query(0)
+    # nnt.query(1)
     
     
     
